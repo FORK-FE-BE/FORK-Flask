@@ -1,0 +1,42 @@
+name: Deploy Flask (Docker) to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Docker Build & Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Docker 이미지 생성
+        run: docker build -t flask-recommender .
+
+      - name: AWS ECR 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 이미지 태깅
+        run: docker tag flask-recommender ${{ steps.login-ecr.outputs.registry }}/flask-recommender:latest
+
+      - name: ECR에 Docker 이미지 push
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/flask-recommender:latest
+
+      - name: SSH로 EC2에 접속 후 Docker compose 실행
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            cd ~/springboot-server
+
+            docker compose pull flask-recommender
+
+            docker compose up -d flask-recommender
