@@ -19,6 +19,8 @@ jobs:
       - name: AWS ECR 로그인
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          region: ap-northeast-2 
 
       - name: 이미지 태깅
         run: docker tag flask-recommender ${{ steps.login-ecr.outputs.registry }}/flask-recommender:latest
