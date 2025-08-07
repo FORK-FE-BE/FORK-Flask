@@ -23,14 +23,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2   
 
-      - name: Docker 이미지 생성
-        run: docker build -t flask-recommender .
-
       - name: AWS ECR 로그인
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: 이미지 태깅
+      - name: Docker 이미지 생성
+        run: docker build -t flask-recommender .
+
+      - name: Docker 이미지에 Tag 붙이기
         run: docker tag flask-recommender ${{ steps.login-ecr.outputs.registry }}/flask-recommender:latest
 
       - name: ECR에 Docker 이미지 push
@@ -46,9 +46,6 @@ jobs:
           script_stop: true
           script: |
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 396913700872.dkr.ecr.ap-northeast-2.amazonaws.com
-
             cd ~/springboot-server
-
             docker compose pull flask-recommender
-
             docker compose up -d flask-recommender
