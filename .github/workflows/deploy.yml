@@ -29,8 +29,6 @@ jobs:
       - name: AWS ECR 로그인
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        with:
-          region: ap-northeast-2 
 
       - name: 이미지 태깅
         run: docker tag flask-recommender ${{ steps.login-ecr.outputs.registry }}/flask-recommender:latest
@@ -47,6 +45,8 @@ jobs:
           port: 22
           script_stop: true
           script: |
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 396913700872.dkr.ecr.ap-northeast-2.amazonaws.com
+
             cd ~/springboot-server
 
             docker compose pull flask-recommender
